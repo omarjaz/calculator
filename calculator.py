@@ -4,10 +4,11 @@ from datetime import datetime
 
 
 # Constantes
-BEER_PRICE = 3
+BEER_PRICE = 4
 WATER_PRICE = 2
-COCTEL_PRICE = 4
+COCTEL_PRICE = 7
 REFRESCO_PRICE = 3
+GLASS_PRICE = 1
 FILENAME = "ventas_nomadart_vol4.csv"
 
 
@@ -32,15 +33,20 @@ st.markdown("<h1 style='text-align: center;'>Registro de Ventas</h1>", unsafe_al
 
 st.markdown("---")
 st.markdown("\n\n")
+
 # 2. INPUTS
 st.markdown("### **Cervezas** 🍺")
-num_beers = st.radio("", list(range(0, 16)), horizontal=True)
-st.markdown("### **Botellas de agua** 💧")
-num_bottles_water = st.number_input("", min_value=0, value=0, step=1,key="agua")
+num_beers = st.radio("", list(range(0, 16)), horizontal=True,key="beer")
 st.markdown("### **Refrescos** 🥤")
-num_refrescos = st.number_input("", min_value=0, value=0, step=1,key="refrescos")
+num_refrescos = st.radio("", list(range(0, 16)), horizontal=True,key="refresco")
+st.markdown("### **Botellas de agua** 💧")
+num_bottles_water = st.radio("", list(range(0, 16)), horizontal=True,key="water")
 st.markdown("### **Copas 🍸**")
-num_coctels = st.number_input("", min_value=0, value=0, step=1,key="copas")
+num_coctels = st.radio("", list(range(0, 16)), horizontal=True,key="copas")
+st.markdown("### **Vasos**")
+num_vasos = st.radio("", list(range(0, 16)), horizontal=True,key="vaso")
+st.markdown("### **Vasos devueltos**")
+num_vasos_devueltos = st.radio("", list(range(0, 16)), horizontal=True,key="vaso_devuelto")
 
 # 3. LÓGICA DE CÁLCULO
 st.markdown("### Acciones de Venta")
@@ -53,11 +59,13 @@ with col1:
                 "Cervezas": num_beers,
                 "Botellas de agua": num_bottles_water,
                 "Copas": num_coctels,
-                "Refrescos": num_refrescos
+                "Refrescos": num_refrescos,
+                "Vasos":num_vasos,
+                "Vasos_devueltos":num_vasos_devueltos,
             }])
         
         st.session_state.ventas = pd.concat([st.session_state.ventas, new_row], ignore_index=True)
-        suma = (num_beers * BEER_PRICE) + (num_bottles_water * WATER_PRICE) + (num_refrescos * REFRESCO_PRICE) + (num_coctels * COCTEL_PRICE)
+        suma = (num_beers * BEER_PRICE) + (num_bottles_water * WATER_PRICE) + (num_refrescos * REFRESCO_PRICE) + (num_coctels * COCTEL_PRICE) + num_vasos*GLASS_PRICE - num_vasos_devueltos*GLASS_PRICE 
             
         st.session_state.total += suma
         st.success(f"Venta registrada: {suma} €")
@@ -69,7 +77,9 @@ with col2:
                     (last_row["Cervezas"] * BEER_PRICE) + 
                     (last_row["Botellas de agua"] * WATER_PRICE) + 
                     (last_row["Refrescos"] * REFRESCO_PRICE) + 
-                    (last_row["Copas"] * COCTEL_PRICE)
+                    (last_row["Copas"] * COCTEL_PRICE) +
+                    (last_row["Vasos"]*GLASS_PRICE) -
+                    (last_row["Vasos_devueltos"]*GLASS_PRICE)
                 )
                 st.session_state.total -= resta
                 st.session_state.ventas = st.session_state.ventas.iloc[:-1]
