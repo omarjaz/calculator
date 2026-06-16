@@ -43,7 +43,7 @@ st.markdown("### Acciones de Venta")
 col1, col2 = st.columns(2)
 
 with col1:
-    if st.button("Registras venta 🧮", use_container_width=True):
+    if st.button("Registrar venta 🧮", use_container_width=True):
         new_row = pd.DataFrame([{
             'Timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 
             "Cervezas": num_beers,
