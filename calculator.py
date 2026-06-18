@@ -9,19 +9,39 @@ WATER_PRICE = 2
 COCTEL_PRICE = 7
 REFRESCO_PRICE = 3
 GLASS_PRICE = 1
+BEER_DISCOUNT = 0.25
+COCTEL_DISCOUNT = 0.5
 FILENAME = "ventas_nomadart_vol4.csv"
+DRINK_LIMIT = 6
+
 
 
 # 1. INICIALIZAR LA MEMORIA
+if "beer_price" not in st.session_state:
+      st.session_state.beer_price = BEER_PRICE
+if "coctel_price" not in st.session_state:
+      st.session_state.coctel_proce = COCTEL_PRICE
+
 if "ventas" not in st.session_state:
         st.session_state.ventas = pd.DataFrame({
-            "Timestamp": [],
-            "Cervezas": [],
-            "Botellas de agua": [],
-            "Copas": [],
-            "Refrescos": []
-        })
-
+    "Timestamp": [],
+    "Cervezas": [],
+    "Botellas de agua": [],
+    "Copas": [],
+    "Refrescos": [],
+    "Vasos": [],
+    "Vasos_devueltos": [],
+    "Venta(€)": []
+}).astype({
+    "Timestamp": "datetime64[ns]",  # Define el tipo de fecha/tiempo
+    "Cervezas": "int",
+    "Botellas de agua": "int",
+    "Copas": "int",
+    "Refrescos": "int",
+    "Vasos": "int",
+    "Vasos_devueltos": "int",
+    "Venta(€)": "float"             # Define el tipo numérico para dinero
+})
 if "total" not in st.session_state:
         st.session_state.total = 0
 
@@ -32,28 +52,36 @@ if "total" not in st.session_state:
 st.markdown("<h1 style='text-align: center;'>Registro de Ventas</h1>", unsafe_allow_html=True)
 
 st.markdown("---")
-st.markdown("\n\n")
 
 # 2. INPUTS
-st.markdown("### **Cervezas** 🍺")
-num_beers = st.radio("", list(range(0, 16)), horizontal=True,key="beer")
-st.markdown("### **Refrescos** 🥤")
-num_refrescos = st.radio("", list(range(0, 16)), horizontal=True,key="refresco")
-st.markdown("### **Botellas de agua** 💧")
-num_bottles_water = st.radio("", list(range(0, 16)), horizontal=True,key="water")
-st.markdown("### **Copas 🍸**")
-num_coctels = st.radio("", list(range(0, 16)), horizontal=True,key="copas")
-st.markdown("### **Vasos**")
-num_vasos = st.radio("", list(range(0, 16)), horizontal=True,key="vaso")
-st.markdown("### **Vasos devueltos**")
-num_vasos_devueltos = st.radio("", list(range(0, 16)), horizontal=True,key="vaso_devuelto")
+col_drink_1,col_drink_2 = st.columns(2)
+title_size="######"
+with col_drink_1:
+    st.markdown(f"{title_size} **Cervezas** 🍺")
+    num_beers = st.radio("",list(range(0, DRINK_LIMIT)), horizontal=True,key="beer")
+    st.markdown("---")
+    st.markdown(f"{title_size} **Botellas de agua** 💧")
+    num_bottles_water = st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="water")
+    st.markdown("---")
+    st.markdown(f"{title_size} **Vasos**")
+    num_vasos = st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="vaso")
+with col_drink_2:
+    st.markdown(f"{title_size} **Copas 🍸**")
+    num_coctels = st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="copas")
+    st.markdown("---")
+    st.markdown(f"{title_size} **Refrescos** 🥤")
+    num_refrescos = st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="refresco")
+    st.markdown("---")
+    st.markdown(f"{title_size} **Vasos devueltos**")
+    num_vasos_devueltos = st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="vaso_devuelto")
 
 # 3. LÓGICA DE CÁLCULO
-st.markdown("### Acciones de Venta")
+st.markdown("## Acciones de Venta")
 col1, col2 = st.columns(2)
 
 with col1:
     if st.button("Registrar venta 🧮", use_container_width=True):
+        suma = (num_beers * st.session_state.beer_price) + (num_bottles_water * WATER_PRICE) + (num_refrescos * REFRESCO_PRICE) + (num_coctels * st.session_state.coctel_price) + num_vasos*GLASS_PRICE - num_vasos_devueltos*GLASS_PRICE 
         new_row = pd.DataFrame([{
                 'Timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 
                 "Cervezas": num_beers,
@@ -62,10 +90,10 @@ with col1:
                 "Refrescos": num_refrescos,
                 "Vasos":num_vasos,
                 "Vasos_devueltos":num_vasos_devueltos,
+                "Venta(€)":suma,
             }])
-        
         st.session_state.ventas = pd.concat([st.session_state.ventas, new_row], ignore_index=True)
-        suma = (num_beers * BEER_PRICE) + (num_bottles_water * WATER_PRICE) + (num_refrescos * REFRESCO_PRICE) + (num_coctels * COCTEL_PRICE) + num_vasos*GLASS_PRICE - num_vasos_devueltos*GLASS_PRICE 
+       
             
         st.session_state.total += suma
         st.success(f"Venta registrada: {suma} €")
@@ -73,15 +101,7 @@ with col2:
         if st.button("Anular última venta ↩️", use_container_width=True):
             if not st.session_state.ventas.empty:
                 last_row = st.session_state.ventas.iloc[-1]
-                resta = (
-                    (last_row["Cervezas"] * BEER_PRICE) + 
-                    (last_row["Botellas de agua"] * WATER_PRICE) + 
-                    (last_row["Refrescos"] * REFRESCO_PRICE) + 
-                    (last_row["Copas"] * COCTEL_PRICE) +
-                    (last_row["Vasos"]*GLASS_PRICE) -
-                    (last_row["Vasos_devueltos"]*GLASS_PRICE)
-                )
-                st.session_state.total -= resta
+                st.session_state.total -= last_row["Venta(€)"]
                 st.session_state.ventas = st.session_state.ventas.iloc[:-1]
                 st.warning("Última venta eliminada correctamente.")
                 st.rerun()
@@ -89,20 +109,31 @@ with col2:
                 st.info("No hay ventas para anular.")
 
 
-# 4. CIERRE DE CAJA
+# 4. CIERRE DE CAJA Y DESCUENTOS
 with st.sidebar:
         st.image("container.jpg")
         st.markdown("---")
 
+        st.markdown("### Descuentos")
+        if st.checkbox(f"Aplicar {int(BEER_DISCOUNT*100)}% dto a cervezas"):
+            st.session_state.beer_price = BEER_PRICE - BEER_PRICE*BEER_DISCOUNT
+        else:
+            st.session_state.beer_price = BEER_PRICE
+        if st.checkbox(f"Aplicar {int(COCTEL_DISCOUNT*100)}% dto a copas"):
+            st.session_state.coctel_price = COCTEL_PRICE - COCTEL_PRICE*COCTEL_DISCOUNT
+        else:
+            st.session_state.coctel_price = COCTEL_PRICE
+        
+
         st.markdown("### Control de Caja")
 
 
-        confirm = st.checkbox("Habilitar el cierre del contenedor")
+        confirm = st.checkbox("Abrir contenedor")
 
         if confirm:
             st.subheader(f"Acumulado Total Histórico: {st.session_state.total} €")
-            st.write("Historial de Ventas actual:")
-            st.dataframe(st.session_state.ventas)
+            st.write("Últimas 5 ventas:")
+            st.dataframe(st.session_state.ventas.tail())
             
             st.download_button(label="Cerrar contenedor 💾",
                 data=st.session_state.ventas.to_csv(index=False).encode('utf-8'),
