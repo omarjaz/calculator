@@ -14,6 +14,17 @@ COCTEL_DISCOUNT = 0.5
 FILENAME = "ventas_nomadart_vol4.csv"
 DRINK_LIMIT = 16
 
+
+
+def make_breakdown_message(breakdown:dict):
+     message = ""
+     for item,amount in breakdown.items():
+          if amount:
+               message += f"{item}: {amount}\n"
+     return message
+    
+     
+
 def register_item():
     num_beers = st.session_state["num_beers"]
     num_water = st.session_state["num_water"]
@@ -23,19 +34,21 @@ def register_item():
     num_vasos_devueltos=st.session_state["num_vasos_devueltos"]
 
     suma = (num_beers * st.session_state.beer_price) + (num_water * WATER_PRICE) + (num_refrescos * REFRESCO_PRICE) + (num_copas* st.session_state.coctel_price) + num_vasos*GLASS_PRICE - num_vasos_devueltos*GLASS_PRICE 
-    new_row = pd.DataFrame([{
-                'Timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 
-                "Cervezas": num_beers,
+    breakdown = {"Cervezas": num_beers,
                 "Botellas de agua": num_water,
                 "Copas": num_copas,
                 "Refrescos": num_refrescos,
                 "Vasos":num_vasos,
-                "Vasos_devueltos":num_vasos_devueltos,
+                "Vasos_devueltos":num_vasos_devueltos}
+    new_row = pd.DataFrame([{
+                'Timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 
+                **breakdown,
                 "Venta(€)":suma,
             }])
     st.session_state.ventas = pd.concat([st.session_state.ventas, new_row], ignore_index=True)
     st.session_state.total += suma
     st.session_state["mensaje_venta"]=f"Venta registrada: {suma} €"
+    st.session_state["desglose"]=make_breakdown_message(breakdown)
     
     # Reiniciar contadores
     st.session_state["num_beers"] = 0
@@ -124,6 +137,10 @@ with col1:
     if "mensaje_venta" in st.session_state:
         st.success(st.session_state["mensaje_venta"])
         del st.session_state["mensaje_venta"]
+    if "desglose" in st.session_state:
+        st.success(st.session_state["desglose"])
+        del st.session_state["desglose"]
+         
         
         
 with col2:
