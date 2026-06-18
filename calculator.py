@@ -20,7 +20,7 @@ def make_breakdown_message(breakdown:dict):
      message = ""
      for item,amount in breakdown.items():
           if amount:
-               message += f"{item}: {amount}\n"
+               message += f"{item}: {amount}  \n"
      return message
     
      
