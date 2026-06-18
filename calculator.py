@@ -12,7 +12,31 @@ GLASS_PRICE = 1
 BEER_DISCOUNT = 0.25
 COCTEL_DISCOUNT = 0.5
 FILENAME = "ventas_nomadart_vol4.csv"
-DRINK_LIMIT = 6
+DRINK_LIMIT = 16
+
+def register_item():
+    suma = (st.session_state["num_beers"] * st.session_state.beer_price) + (st.session_state["num_water"] * WATER_PRICE) + (st.session_state["num_refrescos"] * REFRESCO_PRICE) + (st.session_state["num_copas"]* st.session_state.coctel_price) + st.session_state["num_vasos"]*GLASS_PRICE - st.session_state["num_vasos_devueltos"]*GLASS_PRICE 
+    new_row = pd.DataFrame([{
+                'Timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 
+                "Cervezas": st.session_state["num_beers"],
+                "Botellas de agua": st.session_state["num_water"],
+                "Copas": st.session_state["num_copas"],
+                "Refrescos": st.session_state["num_refrescos"],
+                "Vasos":st.session_state["num_vasos"],
+                "Vasos_devueltos":st.session_state["num_vasos_devueltos"],
+                "Venta(€)":suma,
+            }])
+    st.session_state.ventas = pd.concat([st.session_state.ventas, new_row], ignore_index=True)
+    st.session_state.total += suma
+    st.session_state["mensaje_venta"]=f"Venta registrada: {suma} €"
+    
+    st.session_state["num_beers"] = 0
+    st.session_state["num_water"] = 0
+    st.session_state["num_copas"] = 0
+    st.session_state["num_vasos"] = 0
+    st.session_state["num_vasos_devueltos"] = 0
+    st.session_state["num_refrescos"] = 0
+
 
 
 
@@ -20,7 +44,7 @@ DRINK_LIMIT = 6
 if "beer_price" not in st.session_state:
       st.session_state.beer_price = BEER_PRICE
 if "coctel_price" not in st.session_state:
-      st.session_state.coctel_proce = COCTEL_PRICE
+      st.session_state.coctel_price = COCTEL_PRICE
 
 if "ventas" not in st.session_state:
         st.session_state.ventas = pd.DataFrame({
@@ -55,48 +79,39 @@ st.markdown("---")
 
 # 2. INPUTS
 col_drink_1,col_drink_2 = st.columns(2)
-title_size="######"
+title_size="####"
 with col_drink_1:
     st.markdown(f"{title_size} **Cervezas** 🍺")
-    num_beers = st.radio("",list(range(0, DRINK_LIMIT)), horizontal=True,key="beer")
+    st.radio("",list(range(0, DRINK_LIMIT)), horizontal=True,key="num_beers")
     st.markdown("---")
     st.markdown(f"{title_size} **Botellas de agua** 💧")
-    num_bottles_water = st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="water")
-    st.markdown("---")
-    st.markdown(f"{title_size} **Vasos**")
-    num_vasos = st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="vaso")
-with col_drink_2:
-    st.markdown(f"{title_size} **Copas 🍸**")
-    num_coctels = st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="copas")
+    st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="num_water")
     st.markdown("---")
     st.markdown(f"{title_size} **Refrescos** 🥤")
-    num_refrescos = st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="refresco")
+    st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="num_refrescos")
+    st.markdown("---")
+    
+with col_drink_2:
+    st.markdown(f"{title_size} **Copas 🍸**")
+    st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="num_copas")
+    st.markdown("---")
+    st.markdown(f"{title_size} **Vasos**")
+    st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="num_vasos")
     st.markdown("---")
     st.markdown(f"{title_size} **Vasos devueltos**")
-    num_vasos_devueltos = st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="vaso_devuelto")
+    st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="num_vasos_devueltos")
 
 # 3. LÓGICA DE CÁLCULO
 st.markdown("## Acciones de Venta")
 col1, col2 = st.columns(2)
 
 with col1:
-    if st.button("Registrar venta 🧮", use_container_width=True):
-        suma = (num_beers * st.session_state.beer_price) + (num_bottles_water * WATER_PRICE) + (num_refrescos * REFRESCO_PRICE) + (num_coctels * st.session_state.coctel_price) + num_vasos*GLASS_PRICE - num_vasos_devueltos*GLASS_PRICE 
-        new_row = pd.DataFrame([{
-                'Timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 
-                "Cervezas": num_beers,
-                "Botellas de agua": num_bottles_water,
-                "Copas": num_coctels,
-                "Refrescos": num_refrescos,
-                "Vasos":num_vasos,
-                "Vasos_devueltos":num_vasos_devueltos,
-                "Venta(€)":suma,
-            }])
-        st.session_state.ventas = pd.concat([st.session_state.ventas, new_row], ignore_index=True)
-       
-            
-        st.session_state.total += suma
-        st.success(f"Venta registrada: {suma} €")
+    st.button("Registrar venta 🧮", use_container_width=True,on_click=register_item)
+    if "mensaje_venta" in st.session_state:
+        st.success(st.session_state["mensaje_venta"])
+        del st.session_state["mensaje_venta"]
+        
+        
 with col2:
         if st.button("Anular última venta ↩️", use_container_width=True):
             if not st.session_state.ventas.empty:
