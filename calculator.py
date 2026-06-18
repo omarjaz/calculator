@@ -73,9 +73,9 @@ if "total" not in st.session_state:
 
 
     # Título centrado utilizando HTML
-st.markdown("<h1 style='text-align: center;'>Registro de Ventas</h1>", unsafe_allow_html=True)
+#st.markdown("<h1 style='text-align: center;'>Registro de Ventas</h1>", unsafe_allow_html=True)
 
-st.markdown("---")
+#st.markdown("---")
 
 # 2. INPUTS
 col_drink_1,col_drink_2 = st.columns(2)
