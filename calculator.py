@@ -11,7 +11,7 @@ REFRESCO_PRICE = 3
 GLASS_PRICE = 1
 BEER_DISCOUNT = 0.25
 COCTEL_DISCOUNT = 0.5
-FILENAME = "ventas_nomadart_vol4.csv"
+FILENAME = "ventas_nomadart_vol5.csv"
 DRINK_LIMIT = 16
 
 
@@ -92,41 +92,38 @@ if "total" not in st.session_state:
 
 
 
-
-    # Título centrado utilizando HTML
-#st.markdown("<h1 style='text-align: center;'>Registro de Ventas</h1>", unsafe_allow_html=True)
-
 #st.markdown("---")
 
 # 2. INPUTS
-col_drink_1,col_drink_2 = st.columns(2)
 title_size="####"
-with col_drink_1:
-    st.markdown(f"{title_size} **Cervezas** 🍺")
-    st.radio("",list(range(0, DRINK_LIMIT)), horizontal=True,key="num_beers")
-    st.markdown("---")
-    
-    st.markdown(f"{title_size} **Botellas de agua** 💧")
-    st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="num_water")
-    st.markdown("---")
-    
-    st.markdown(f"{title_size} **Refrescos** 🥤")
-    st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="num_refrescos")
-    st.markdown("---")
-    
-with col_drink_2:
-    st.markdown(f"{title_size} **Copas 🍸**")
-    st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="num_copas")
-    st.markdown("---")
-    
-    st.markdown(f"{title_size} **Vasos devueltos**")
-    st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="num_vasos_devueltos")
-    st.markdown("---")
-    
-    st.markdown(f"{title_size} **Vasos**")
-    st.radio("", list(range(0, DRINK_LIMIT)), horizontal=True,key="num_vasos")
-    
-    
+st.markdown(
+    """
+    <style>
+    /* Apuntar directamente al contenedor del texto dentro de los botones de las pestañas */
+    button[data-baseweb="tab"] div[data-testid="stMarkdownContainer"] p {
+        font-size: 25px !important;  /* Ajusta los píxeles según lo que necesites */
+        font-weight: 500;            /* Opcional: define el grosor de la letra */
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+tab1, tab2, tab3, tab4, tab5,tab6 = st.tabs(["🍺", "🍸", "💧", "🥤", "Vasos devueltos","Vasos"])
+
+with tab1:
+    st.radio("Cervezas",list(range(0, DRINK_LIMIT)), horizontal=True,key="num_beers")
+with tab2:
+     st.radio("Copas", list(range(0, DRINK_LIMIT)), horizontal=True,key="num_copas")
+with tab3:
+    st.radio("Agua", list(range(0, DRINK_LIMIT)), horizontal=True,key="num_water")
+with tab4:
+    st.radio("Refrescos", list(range(0, DRINK_LIMIT)), horizontal=True,key="num_refrescos")
+with tab5:
+    st.radio("Vasos devueltos", list(range(0, DRINK_LIMIT)), horizontal=True,key="num_vasos_devueltos")
+with tab6:
+    st.radio("Vasos", list(range(0, DRINK_LIMIT)), horizontal=True,key="num_vasos")
+
+
+
 
 # 3. LÓGICA DE CÁLCULO
 st.markdown("### Acciones de Venta")
